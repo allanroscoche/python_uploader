@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<form action="/upload/" method="get">
+    Digite o identificador: <input id="code" type="text" maxlength="5"/>
+    <input id="submit" type="submit" value="OK" />
+</form>
+<script>
+(function() {
+  $("#submit").click(function(){
+    var code = $("#code").val();
+    location.href = '/upload/'+code;
+    return false;
+  })
+})();
+</script>
+{% endblock %}

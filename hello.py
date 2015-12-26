@@ -4,9 +4,13 @@ from hashlib import sha1
 
 app = Flask(__name__)
 
+
+@app.route("/")
+def index():
+    return render_template('index.html')
 # Listen for GET requests to yourdomain.com/account/
-@app.route("/account/")
-def account():
+@app.route("/upload/<id>")
+def account(id):
     # Show the account-edit HTML page:
     return render_template('account.html')
 

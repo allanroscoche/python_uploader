@@ -1,18 +1,19 @@
-<html>
-<body>
+{% extends "layout.html" %}
+{% block body %}
 
-<h2>Selecione a foto:</h2>
-
-<input type="file" id="file_input"/>
-<p id="status">Prévia da foto:</p>
-<img style="border:1px solid gray;width:300px;"  id="preview" src="/static/media/default.png" />
-
+<img id="loading" src="/static/media/loading.gif" style="visibility:hidden">
+<input type="file" id="file_input" style="visibility:hidden" />
+<!--<img style="border:1px solid gray;width:300px;"  id="preview" src="/static/media/default.png" />
+-->
+<div>
+  <h3>Adicionar Imagem</h3>
+  <img id="preview" src="/static/media/plus.png">
+</div>
 
 
 <form method="POST" action="/submit_form/">
     <input type="hidden" id="avatar_url" name="avatar_url" value="/static/media/default.png" />
 
-    <input type="submit" value="Concluir" />
 </form>
 
 
@@ -29,6 +30,14 @@ function upload_file(file, signed_request, url){
         if (xhr.status === 200) {
             document.getElementById("preview").src = url;
             document.getElementById("avatar_url").value = url;
+            $('#preview').cropper({
+              aspectRatio: 16 / 9,
+              rotatable: true,
+              crop: function(e) {
+                // Output the result data for cropping image.
+                //console.log('opa');
+              }
+            });
         }
     };
     xhr.onerror = function() {
@@ -70,6 +79,7 @@ function init_upload(){
         alert("No file selected.");
         return;
     }
+    document.getElementById("preview").src = document.getElementById("loading").src;
     get_signed_request(file);
 }
 
@@ -78,8 +88,10 @@ function init_upload(){
 */
 (function() {
     document.getElementById("file_input").onchange = init_upload;
+    $("#preview").on("click",function(){
+      $("#file_input").click();
+    });
 })();
 
 </script>
-</body>
-</html>
+{% endblock %}
