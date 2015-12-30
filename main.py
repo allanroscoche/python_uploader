@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, redirect, Response, url_for
+from flask import Flask, render_template, request, redirect, Response, url_for, jsonify
 import time, os, json, base64, hmac, urllib
 from hashlib import sha1
+from PIL import Image
+from io import BytesIO
+import boto3
 
 app = Flask(__name__)
-
 
 @app.route("/")
 def index():
@@ -12,22 +14,53 @@ def index():
 @app.route("/upload/<id>")
 def account(id):
     # Show the account-edit HTML page:
-    return render_template('account.html')
-
+    return render_template('upload.html')
 
 # Listen for POST requests to yourdomain.com/submit_form/
 @app.route("/submit_form/", methods=["POST"])
 def submit_form():
+    #return jsonify(status = "OK")
+    #return json.dumps({'status':'OK'})
     # Collect the data posted from the HTML form in account.html:
-    username = request.form["username"]
-    full_name = request.form["full_name"]
-    avatar_url = request.form["avatar_url"]
+    #username = request.form["username"]
+    #full_name = request.form["full_name"]
+    #avatar_url = request.form["avatar_url"]
 
     # Provide some procedure for storing the new details
-    update_account(username, full_name, avatar_url)
+    #update_account(username, full_name, avatar_url)
 
     # Redirect to the user's profile page, if appropriate
     return redirect(url_for('profile'))
+
+@app.route("/submit_changes/", methods=["POST"])
+def submit_changes():
+    print request.form
+    top = int(request.form["crop[x]"])
+    left = int(request.form["crop[y]"])
+    width = int(request.form["crop[width]"])
+    height = int(request.form["crop[height]"])
+    name = request.form["name"]
+
+    s3 = boto3.resource('s3')
+    print "nome:"+name
+    img = Image.open(s3.Object('acessodoutorupload', name).get()['Body'])
+    if (img.size[0] < 300) or (img.size[1] < 300):
+        crod = img.crop((top,left,width+top,height+left))
+        diff = 300 - min(crod.size)
+        output = crod.resize( (crod.width+diff, crod.height+diff))
+        #output = cropped
+    else:
+        output = img.crop((top,left,top+300,left+300))
+    outbuffer = BytesIO()
+    output.save(outbuffer,format="jpeg")
+    s3.Object('acessodoutorupload', 'eu_rotate.jpeg').put(
+        Body=outbuffer.getvalue(),
+        ACL='public-read',
+        ContentType = 'image/jpeg',
+        )
+    url = 'https://%s.s3.amazonaws.com/%s' % ('acessodoutorupload', 'eu_rotate.jpeg')
+
+    return jsonify(status = 'OK', url = url)
 
 
 # Listen for GET requests to yourdomain.com/sign_s3/

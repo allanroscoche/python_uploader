@@ -1,23 +1,55 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<img id="loading" src="/static/media/loading.gif" style="visibility:hidden">
-<input type="file" id="file_input" style="visibility:hidden" />
 <!--<img style="border:1px solid gray;width:300px;"  id="preview" src="/static/media/default.png" />
 -->
-<div>
+<div class="image-box">
   <h3>Adicionar Imagem</h3>
   <img id="preview" src="/static/media/plus.png">
 </div>
+<img id="loading" src="/static/media/loading.gif" style="visibility:hidden">
+<input type="file" id="file_input" style="visibility:hidden" />
 
-
-<form method="POST" action="/submit_form/">
-    <input type="hidden" id="avatar_url" name="avatar_url" value="/static/media/default.png" />
-
-</form>
+<input type="button" id="upload_crop" value="Salvar" onClick="upload_croped()" />
 
 
 <script type="text/javascript">
+
+function add_controls(){
+  $('#preview').cropper({
+     aspectRatio: 1,
+    viewMode: 1,
+    dragMode: 'move',
+    restore: false,
+    guides: false,
+    highlight: false,
+    scalable: false,
+    zoomable: false,
+    cropBoxMovable: false,
+    cropBoxResizable: false,
+    minCropBoxHeight:300,
+    minCropBoxWidth:300,
+    minCanvasHeight:300,
+    minContainerHeight:300,
+    built: function () {
+      $('#preview').cropper("setCropBoxData", { width: "300", height: "300" });
+    }
+  });
+}
+
+function upload_croped(){
+
+  var cropData = $('#preview').cropper('getData',{rounded: true});
+  var imageData = $('#preview').cropper('getCropBoxData');
+  var imageName = document.getElementById("file_input").files[0].name;
+  var data = {name: imageName, crop: cropData}
+  $.post("/submit_changes/", data, function( data ) {
+    if(data.status == "OK"){
+      $('#preview').cropper('destroy');
+      document.getElementById("preview").src = data.url;
+    }
+  } )
+}
 
 /*
     Function to carry out the actual PUT request to S3 using the signed request from the Python app.
@@ -29,15 +61,7 @@ function upload_file(file, signed_request, url){
     xhr.onload = function() {
         if (xhr.status === 200) {
             document.getElementById("preview").src = url;
-            document.getElementById("avatar_url").value = url;
-            $('#preview').cropper({
-              aspectRatio: 16 / 9,
-              rotatable: true,
-              crop: function(e) {
-                // Output the result data for cropping image.
-                //console.log('opa');
-              }
-            });
+            add_controls();
         }
     };
     xhr.onerror = function() {
