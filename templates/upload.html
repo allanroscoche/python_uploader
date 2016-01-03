@@ -1,23 +1,54 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<!--<img style="border:1px solid gray;width:300px;"  id="preview" src="/static/media/default.png" />
--->
-<div class="image-box">
+
+<div id="dropbox" >
   <h3>Adicionar Imagem</h3>
-  <img id="preview" src="/static/media/plus.png">
+  <span id="container"> </span>
+  <span class="image-box" >
+    <img id="preview" src="/static/media/plus.png">
+  </span>
 </div>
-<img id="loading" src="/static/media/loading.gif" style="visibility:hidden">
-<input type="file" id="file_input" style="visibility:hidden" />
+<input type="file" id="file_input" style="visibility:hidden" multiple />
 
-<input type="button" id="upload_crop" value="Salvar" onClick="upload_croped()" />
-
+<!-- <input type="button"  id="upload_crop" value="Salvar" onClick="upload_croped()" />
+-->
 
 <script type="text/javascript">
 
-function add_controls(){
-  $('#preview').cropper({
-     aspectRatio: 1,
+var dropbox;
+
+dropbox = document.getElementById("dropbox");
+dropbox.addEventListener("dragenter", dragenter, false);
+dropbox.addEventListener("dragover", dragover, false);
+dropbox.addEventListener("drop", drop, false);
+
+function dragenter(e) {
+  e.stopPropagation();
+  e.preventDefault();
+}
+
+function dragover(e) {
+  e.stopPropagation();
+  e.preventDefault();
+}
+
+function drop(e) {
+  e.stopPropagation();
+  e.preventDefault();
+
+  var dt = e.dataTransfer;
+  var files = dt.files;
+
+  for(i=0;i<files.length;i++)
+    get_signed_request(files[i]);
+
+}
+
+
+function add_controls(name){
+  $('#'+name).cropper({
+    aspectRatio: 1,
     viewMode: 1,
     dragMode: 'move',
     restore: false,
@@ -32,7 +63,7 @@ function add_controls(){
     minCanvasHeight:300,
     minContainerHeight:300,
     built: function () {
-      $('#preview').cropper("setCropBoxData", { width: "300", height: "300" });
+      $('#'+name).cropper("setCropBoxData", { width: "300", height: "300" });
     }
   });
 }
@@ -51,6 +82,20 @@ function upload_croped(){
   } )
 }
 
+function add_image(url,file){
+  $("#container").append("<span class='image-box' ><img class='thumb' src='"+url+"' /></span>");
+}
+
+function updateProgress (oEvent) {
+
+  console.log("loading...");
+  if (oEvent.lengthComputable) {
+    var percentComplete = oEvent.loaded / oEvent.total;
+    console.log("progress:"+percentComplete+"%");
+  } else {
+    // Unable to compute progress information since the total size is unknown
+  }
+}
 /*
     Function to carry out the actual PUT request to S3 using the signed request from the Python app.
 */
@@ -58,15 +103,18 @@ function upload_file(file, signed_request, url){
     var xhr = new XMLHttpRequest();
     xhr.open("PUT", signed_request);
     xhr.setRequestHeader('x-amz-acl', 'public-read');
+    //xhr.onprogress = updateProgress;
+    xhr.upload.addEventListener("progress", updateProgress, false);
     xhr.onload = function() {
         if (xhr.status === 200) {
-            document.getElementById("preview").src = url;
-            add_controls();
+            add_image(url,file);
+            console.log("loaded");
         }
     };
     xhr.onerror = function() {
         alert("Could not upload file.");
     };
+    console.log("loading")
     xhr.send(file);
 }
 
@@ -103,8 +151,9 @@ function init_upload(){
         alert("No file selected.");
         return;
     }
-    document.getElementById("preview").src = document.getElementById("loading").src;
-    get_signed_request(file);
+    //document.getElementById("preview").src = document.getElementById("loading").src;
+    for(i=0;i<files.length;i++)
+      get_signed_request(files[i]);
 }
 
 /*

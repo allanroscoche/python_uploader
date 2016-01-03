@@ -1,5 +1,10 @@
 .image-box {
-  width: 400px;
-  height: 400px;
-  
+  width: 300px;
+  height: 300px;
+  background-color: gray;
+
+}
+.thumb {
+  width: 200px;
+  margin: 5px 5px 5px 5px;
 }
