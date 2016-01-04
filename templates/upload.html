@@ -109,7 +109,7 @@ function updateProgress (oEvent) {
     Function to carry out the actual PUT request to S3 using the signed request from the Python app.
 */
 function file_name(file){
-  return file.name.split(".")[0];
+  return file.name.replace(/[ `~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '');
 }
 
 function upload_file(file, signed_request, url){
