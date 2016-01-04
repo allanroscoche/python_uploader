@@ -4,6 +4,7 @@ from hashlib import sha1
 from PIL import Image
 from io import BytesIO
 import boto3
+import time
 
 app = Flask(__name__)
 
@@ -92,6 +93,8 @@ def sign_s3():
 
     # Build the URL of the file in anticipation of its imminent upload:
     url = 'https://%s.s3.amazonaws.com/%s' % (S3_BUCKET, object_name)
+
+    filename = int( time.time() )
 
     content = json.dumps({
         'signed_request': '%s?AWSAccessKeyId=%s&Expires=%s&Signature=%s' % (url, AWS_ACCESS_KEY, expires, signature),
