@@ -76,7 +76,10 @@ def sign_s3():
     S3_BUCKET = os.environ.get('S3_BUCKET')
 
     # Collect information on the file from the GET parameters of the request:
-    object_name = urllib.quote_plus(request.args.get('file_name'))
+    filename = str(int(time.time()))
+    object_name = urllib.quote_plus(filename)
+
+    #object_name = urllib.quote_plus(request.args.get('file_name'))
     mime_type = request.args.get('file_type')
 
     # Set the expiry time of the signature (in seconds) and declare the permissions of the file to be uploaded
@@ -94,11 +97,10 @@ def sign_s3():
     # Build the URL of the file in anticipation of its imminent upload:
     url = 'https://%s.s3.amazonaws.com/%s' % (S3_BUCKET, object_name)
 
-    filename = int( time.time() )
-
     content = json.dumps({
         'signed_request': '%s?AWSAccessKeyId=%s&Expires=%s&Signature=%s' % (url, AWS_ACCESS_KEY, expires, signature),
         'url': url,
+        'filename': filename,
     })
 
     return content

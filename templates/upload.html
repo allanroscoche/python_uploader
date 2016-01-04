@@ -1,7 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
 
-
 <div id="dropbox" >
   <h3>Adicionar Imagem</h3>
   <span id="container"> </span>
@@ -82,7 +81,6 @@ function upload_croped(){
     }
   } )
 }*/
-console.log("timestamp:"+new Date().getTime())
 
 function init_image(id){
   $("#container").append("<progress id='prog_"+
@@ -90,34 +88,21 @@ function init_image(id){
   "' value='0' max='100' ></progress>");
 }
 function finish_image(id,url) {
-  //document.getElementById("i_"+id).src = url;
-  //$("#i_"+id).attr('src',url);
   $("#container").append("<span class='image-box' ><img id='i_"+
   id+"' class='thumb' src='"+url+"' /></span>");
   $("#prog_"+id).remove();
-  $("#file_input").val('');
+  $("#file_input  ").val('');
 }
 
-function updateProgress (oEvent) {
-
-  if (oEvent.lengthComputable) {
-    var percentComplete = oEvent.loaded / oEvent.total;
-    console.log("progress:"+percentComplete+"%");
-    $("#prog_").attr('value', Math.round(percentComplete*100));
-    //$("#p_").attr( "value", percentComplete );
-  }
-}
-/*
-    Function to carry out the actual PUT request to S3 using the signed request from the Python app.
-*/
 function file_name(file){
   return file.name.replace(/[ `~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '');
 }
 
+/*
+    Function to carry out the actual PUT request to S3 using the signed request from the Python app.
+*/
 function upload_file(file, signed_request, url, filename){
 
-    //id_name = file.name.split(".")[0];
-    //init_image(file_name(file));
     init_image(filename);
     var xhr = new XMLHttpRequest();
     xhr.open("PUT", signed_request);
@@ -125,13 +110,11 @@ function upload_file(file, signed_request, url, filename){
     xhr.upload.addEventListener("progress", function(oEvent){
       if (oEvent.lengthComputable) {
         var percentComplete = Math.round(oEvent.loaded / oEvent.total * 100);
-        //$("#prog_"+file_name(file)).attr('value', percentComplete);
         $("#prog_"+filename).attr('value', percentComplete);
       }
     }, false);
     xhr.onload = function() {
         if (xhr.status === 200) {
-            //add_image(url,file);
             finish_image(filename,url);
         }
     };
@@ -156,7 +139,7 @@ function get_signed_request(file){
                 upload_file(file, response.signed_request, response.url, response.filename);
             }
             else{
-                alert("Could not get signed URL.");
+                alert("Não foi possível realizar o upload.");
             }
         }
     };
@@ -171,10 +154,9 @@ function init_upload(){
     var files = document.getElementById("file_input").files;
     var file = files[0];
     if(file == null){
-        alert("No file selected.");
+        alert("Nenhum arquivo selecionado.");
         return;
     }
-    //document.getElementById("preview").src = document.getElementById("loading").src;
     for(i=0;i<files.length;i++)
       get_signed_request(files[i]);
 }
