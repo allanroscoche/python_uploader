@@ -6,6 +6,8 @@
   <h3>Adicionar Imagem</h3>
   <span id="container"> </span>
   <span class="image-box" >
+    <span class='image-box' >
+    </span>
     <img id="preview" src="/static/media/plus.png">
   </span>
 </div>
@@ -45,7 +47,7 @@ function drop(e) {
 
 }
 
-
+/*
 function add_controls(name){
   $('#'+name).cropper({
     aspectRatio: 1,
@@ -67,7 +69,6 @@ function add_controls(name){
     }
   });
 }
-
 function upload_croped(){
 
   var cropData = $('#preview').cropper('getData',{rounded: true});
@@ -80,41 +81,59 @@ function upload_croped(){
       document.getElementById("preview").src = data.url;
     }
   } )
-}
+}*/
 
-function add_image(url,file){
-  $("#container").append("<span class='image-box' ><img class='thumb' src='"+url+"' /></span>");
+function init_image(id){
+  $("#container").append("<progress id='prog_"+
+  id+
+  "' value='0' max='100' ></progress>");
+}
+function finish_image(id,url) {
+  //document.getElementById("i_"+id).src = url;
+  //$("#i_"+id).attr('src',url);
+  $("#container").append("<span class='image-box' ><img id='i_"+
+  id+"' class='thumb' src='"+url+"' /></span>");
+  $("#prog_"+id).remove();
 }
 
 function updateProgress (oEvent) {
 
-  console.log("loading...");
   if (oEvent.lengthComputable) {
     var percentComplete = oEvent.loaded / oEvent.total;
     console.log("progress:"+percentComplete+"%");
-  } else {
-    // Unable to compute progress information since the total size is unknown
+    $("#prog_").attr('value', Math.round(percentComplete*100));
+    //$("#p_").attr( "value", percentComplete );
   }
 }
 /*
     Function to carry out the actual PUT request to S3 using the signed request from the Python app.
 */
+function file_name(file){
+  return file.name.split(".")[0];
+}
+
 function upload_file(file, signed_request, url){
+
+    //id_name = file.name.split(".")[0];
+    init_image(file_name(file));
     var xhr = new XMLHttpRequest();
     xhr.open("PUT", signed_request);
     xhr.setRequestHeader('x-amz-acl', 'public-read');
-    //xhr.onprogress = updateProgress;
-    xhr.upload.addEventListener("progress", updateProgress, false);
+    xhr.upload.addEventListener("progress", function(oEvent){
+      if (oEvent.lengthComputable) {
+        var percentComplete = Math.round(oEvent.loaded / oEvent.total * 100);
+        $("#prog_"+file_name(file)).attr('value', percentComplete);
+      }
+    }, false);
     xhr.onload = function() {
         if (xhr.status === 200) {
-            add_image(url,file);
-            console.log("loaded");
+            //add_image(url,file);
+            finish_image(file_name(file),url);
         }
     };
     xhr.onerror = function() {
         alert("Could not upload file.");
     };
-    console.log("loading")
     xhr.send(file);
 }
 
