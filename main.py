@@ -4,7 +4,7 @@ from hashlib import sha1
 from PIL import Image
 from io import BytesIO
 import boto3
-import time
+import uuid
 
 app = Flask(__name__)
 
@@ -76,7 +76,7 @@ def sign_s3():
     S3_BUCKET = os.environ.get('S3_BUCKET')
 
     # Collect information on the file from the GET parameters of the request:
-    filename = str(int(time.time()))
+    filename = uuid.uuid4().hex[:10].upper()
     object_name = urllib.quote_plus(filename)
 
     #object_name = urllib.quote_plus(request.args.get('file_name'))

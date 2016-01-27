@@ -46,42 +46,6 @@ function drop(e) {
 
 }
 
-/*
-function add_controls(name){
-  $('#'+name).cropper({
-    aspectRatio: 1,
-    viewMode: 1,
-    dragMode: 'move',
-    restore: false,
-    guides: false,
-    highlight: false,
-    scalable: false,
-    zoomable: false,
-    cropBoxMovable: false,
-    cropBoxResizable: false,
-    minCropBoxHeight:300,
-    minCropBoxWidth:300,
-    minCanvasHeight:300,
-    minContainerHeight:300,
-    built: function () {
-      $('#'+name).cropper("setCropBoxData", { width: "300", height: "300" });
-    }
-  });
-}
-function upload_croped(){
-
-  var cropData = $('#preview').cropper('getData',{rounded: true});
-  var imageData = $('#preview').cropper('getCropBoxData');
-  var imageName = document.getElementById("file_input").files[0].name;
-  var data = {name: imageName, crop: cropData}
-  $.post("/submit_changes/", data, function( data ) {
-    if(data.status == "OK"){
-      $('#preview').cropper('destroy');
-      document.getElementById("preview").src = data.url;
-    }
-  } )
-}*/
-
 function init_image(id){
   $("#container").append("<progress id='prog_"+
   id+
@@ -169,6 +133,7 @@ function init_upload(){
     $("#preview").on("click",function(){
       $("#file_input").click();
     });
+
 })();
 
 </script>
